@@ -10,7 +10,6 @@
 | Domain | Hoàn toàn domain-agnostic |
 | Phần cứng | Giới hạn 16GB VRAM, peak thực tế phải giữ < 10GB |
 | Quản lý secret | Toàn bộ API Key (WANDB_API_KEY, QDRANT_API_KEY, Gemini/Groq) nạp qua `python-dotenv`. Không hardcode. |
-| Quản lý dependency | Chỉ dùng `requirements.txt`; tuyệt đối không `pip install` trong code |
 | Bảo mật file | `data/` (video, temp, qdrant_db) và `.env` nằm trong `.gitignore` |
 | I/O | Điều khiển 100% qua `argparse` CLI. Output JSON tinh gọn (`status`, `answer`, `trake`) hoặc CSV. Không log rác. |
 
