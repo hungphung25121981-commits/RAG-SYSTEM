@@ -19,7 +19,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     cmake \
     ninja-build \
     && rm -rf /var/lib/apt/lists/*
-# Cài bản wheel dựng sẵn cho CUDA 12.1 (Tải 5 giây là xong, đéo lo thiếu Ninja/CMake)
+# Cài bản wheel dựng sẵn cho CUDA 12.1 
 ENV CMAKE_ARGS="-DLLAMA_CUBLAS=on"
 ENV FORCE_CMAKE=1
 
@@ -34,7 +34,6 @@ RUN pip3 install --no-cache-dir torch torchvision torchaudio --index-url https:/
 RUN pip install --default-timeout=1000 --retries 10 \
     onnxruntime-gpu rapidocr-onnxruntime easyocr ultralytics kuzu trulens-eval
 
-# 2. Cài toàn bộ các gói còn lại trong requirements.txt
 RUN pip install --default-timeout=1000 --retries 10 -r requirements.txt
 
 COPY ./backend/ .
