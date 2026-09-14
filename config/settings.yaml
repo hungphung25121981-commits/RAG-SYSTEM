@@ -1,0 +1,164 @@
+﻿# ============================================================
+# HUB KIẾN THỨC - RAG Backend Architecture V8
+# Single source of truth cho toàn bộ pipeline hyper-parameters.
+# ============================================================
+
+# ------------------------------------------
+# 0. CI/CD & MLOps
+# ------------------------------------------
+ci_cd:
+  environment: "${APP_ENV:-development}"
+  hardware_target:
+    vram_hard_limit: 16                          #[cite: 1]
+    vram_peak_target: 10                         #[cite: 1]
+
+paths:
+  raw_videos_dir: "${DATA_DIR:-data/raw_videos}" #[cite: 3]
+  video_info_dir: "data/video_info"              #[cite: 3]
+  keyframes_dir: "data/keyframes"                #[cite: 3]
+  keyframe_map_csv: "data/keyframe_map.csv"      #[cite: 3]
+  metadata_parquet: "data/metadata.parquet"      #[cite: 3]
+  bm25_corpus_path: "data/index/bm25_corpus.pkl" #[cite: 3]
+  id_map_path: "data/index/segment_id_map.pkl"   #[cite: 3]
+  qdrant_db: "${QDRANT_PATH:-data/qdrant_db}"    #[cite: 1]
+  kuzu_graph: "${KUZU_PATH:-data/kuzu_graph}"    #[cite: 1]
+  temp_workspace: "${TEMP_DIR:-data/temp}"       #[cite: 1]
+  logs_dir: "logs"                               #[cite: 3]
+
+mlops:
+  wandb_project: "hub_kien_thuc_rag"             #[cite: 1]
+  stress_test_file: "stress_test.mp4"            #[cite: 1]
+
+runtime:
+  device_map: "auto"                             #[cite: 3]
+  compute_dtype: "bfloat16"                      #[cite: 3]
+  seed: 42                                       #[cite: 3]
+  log_level: "INFO"                              #[cite: 3]
+
+phase1_audio:
+  target_sample_rate: 48000                      #[cite: 1]
+  rms_gate_epsilon: 0.01                       #[cite: 1]
+  clap_model_id: "laion/clap-htsat-unfused"
+  clap_batch_size: 8
+  
+  whisper_model_size: "small"                    #[cite: 3]
+  device: "cuda"                                 #[cite: 3]
+  compute_type: "float16"                        #[cite: 3]
+  language: null                                 #[cite: 3]
+  beam_size: 3                                  #[cite: 3]
+  condition_on_previous_text: false              #[cite: 3]
+  
+  vad_filter: true                               #[cite: 3]
+  vad_min_silence_duration_ms: 500               #[cite: 3]
+  no_speech_prob_threshold: 0.6                  #[cite: 3]
+  avg_logprob_threshold: -1.0                    #[cite: 3]
+  min_segment_chars: 3                           #[cite: 3]
+  merge_gap_sec: 1.0                             #[cite: 3]
+  max_transcript_chars_per_segment: 500          #[cite: 3]
+  alignment_window_sec: 12.5                     #[cite: 3]
+  
+  use_lora_finetune: false                       #[cite: 3]
+  lora_base_checkpoint: "openai/whisper-small"   #[cite: 3]
+  lora_adapter_path: null                        #[cite: 3]
+  lora_r: 8                                      #[cite: 3]
+  lora_alpha: 16                                 #[cite: 3]
+  lora_dropout: 0.05                             #[cite: 3]
+  lora_target_modules: ["q_proj", "v_proj"]      #[cite: 3]
+
+phase1_vision:
+  scenedetect_threshold: 27.0                    #[cite: 3]
+  jpeg_quality: 92                               #[cite: 3]
+  frame_resize_max_side: 1024                    #[cite: 3]
+  
+  ocr_engine: "rapidocr"                         #[cite: 3]
+  ocr_lang: "en"                                 #[cite: 3]
+  ocr_use_angle_cls: true                        #[cite: 3]
+  ocr_min_confidence: 0.55                       #[cite: 3]
+  ocr_dedupe_iou: 0.5                            #[cite: 3]
+  
+  ocr_max_retries: 3                             #[cite: 1]
+  clahe_clip_limit: 2.0                          #[cite: 1]
+  clahe_tile_grid_size: [8, 8]
+  fallback_engine: "easyocr"                     #[cite: 1]
+  
+  caption_max_chars: 600                         #[cite: 3]
+  caption_max_lines: 12                          #[cite: 3]
+  caption_empty_fallback: "No on-screen text detected in this segment." #[cite: 3]
+
+phase2_vector:
+  embedding_model_id: "BAAI/bge-m3"              #[cite: 3]
+  embedding_dim: 1024                            #[cite: 3]
+  embedding_batch_size: 16                       #[cite: 3]
+  embedding_max_length: 512                      #[cite: 3]
+  embedding_normalize: true                      #[cite: 3]
+  
+  siglip_model_id: "google/siglip2-base-patch16-224"
+  siglip_embedding_dim: 768                      #[cite: 3]
+  siglip_batch_size: 8
+  siglip_compute_dtype: "bfloat16"               
+  siglip_text_max_length: 64                     #[cite: 3]
+  frame_select_fast_mode: true                   
+  
+  bm25_k1: 1.5                                   #[cite: 3]
+  bm25_b: 0.75                                   #[cite: 3]
+  bm25_tokenizer: "simple_lower_split"           #[cite: 3]
+
+phase3_search:
+  semantic_top_k: 20
+  visual_top_k: 20
+  sparse_top_k: 20
+  rrf_k: 60                                      #[cite: 3]
+  final_top_k: 6                                 #[cite: 3]
+  min_relevance_score: 0.15                      #[cite: 3]
+  timestamp_link_fallback_format: "{video_id}#t={start_time}s" #[cite: 3]
+  
+  router_model: "cross-encoder/nli-deberta-v3-small"
+  fallback_confidence: 0.4                       #[cite: 1]
+  enable_multihop: true                          #[cite: 3]
+  max_subqueries: 4                              #[cite: 3]
+  hop_limit_min: 1                               #[cite: 1]
+  hop_limit_max: 5                               #[cite: 1]
+  
+  enable_certificates: true                      #[cite: 3]
+  cert_verified_threshold: 0.55                  #[cite: 3]
+  cert_partial_threshold: 0.30                   #[cite: 3]
+  cert_max_reretrieval_attempts: 1               #[cite: 3]
+  cert_reretrieval_top_k_multiplier: 2           #[cite: 3]
+  
+  max_context_images: 4                          #[cite: 1]
+  vlm_model_id: "Qwen/Qwen2.5-VL-3B-Instruct"    #[cite: 3]
+  vlm_quantization: "nf4"                        #[cite: 3]
+  vlm_compute_dtype: "bfloat16"                  #[cite: 3]
+  vlm_max_new_tokens: 220                        #[cite: 3]
+  vlm_temperature: 0.2                           #[cite: 3]
+  vlm_top_p: 0.9                                 #[cite: 3]
+  vlm_images_per_call: 5                         #[cite: 3]
+  
+  vlm_use_qlora: false                           #[cite: 3]
+  vlm_lora_adapter_path: null                    #[cite: 3]
+  vlm_lora_r: 16                                 #[cite: 3]
+  vlm_lora_alpha: 32                             #[cite: 3]
+  vlm_lora_dropout: 0.05                         #[cite: 3]
+  vlm_lora_target_modules: ["q_proj", "k_proj", "v_proj", "o_proj"] #[cite: 3]
+
+phase4_eval:
+  sample_rate: 0.1                               #[cite: 1]
+  reranker_model: "BAAI/bge-reranker-base"       #[cite: 1]
+  nli_model: "cross-encoder/nli-deberta-v3-base" #[cite: 1]
+  cascade_low_reject: 0.4                        #[cite: 1]
+  cascade_high_pass: 0.7                         #[cite: 1]
+  judge_model_gguf: "prometheus-eval/prometheus-7b-v2.0-Q4_K_M.gguf" #[cite: 1]
+
+cli:
+  cli_top_n_default: 20                          #[cite: 3]
+  trake_search_top_n: 50                         #[cite: 3]
+  rerank_batch_size: 15                          #[cite: 3]
+
+domains:
+  hub_kien_thuc:
+    alpha: 0.50                                  #[cite: 1]
+    beta: 0.30                                   #[cite: 1]
+    gamma_matrix:
+      variance_boundary: 100.0                   #[cite: 1]
+      low_variance: 70.0                         #[cite: 1]
+      high_variance: 85.0                        #[cite: 1]

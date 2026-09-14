@@ -1,0 +1,97 @@
+﻿
+services: 
+
+#
+#               VECTOR DATABASE(QDRANT)
+#
+    vector_db:   #qdrant
+        image: qdrant/qdrant:v1.8.0
+        container_name: qdrant_rag
+        ports: 
+            - "8080:8080" 
+            - "6363:6363"
+        volumes:
+           - ./backend/data/qdrant_db:/qdrant/storage
+        restart: always
+       
+#
+#                   CLI ENgine
+#
+    rag_engine:
+            container_name: rag_engine
+            build: 
+              context: .
+              dockerfile: backend/Dockerfile
+            depends_on: 
+              - vector_db
+            env_file: .env
+            volumes:
+            - ./backend/data:/app/backend/data
+         #  deploy:
+                #resources:
+                      #reservations:
+                        #devices:
+
+                           #   - capabilities: [gpu] 
+                            #    count: all'''
+            stdin_open: true  # giu luong nhap du lieu mo de go
+            tty: true   # cung cấp 1 terminal ảo cho container  
+            entrypoint: ["python3","backend"]         # nó sẽ trở thành file thực thi chính của container, thay thế lệnh mặc định của image
+            develop: 
+                watch:
+                 - action: sync
+                   path: backend/
+                   target: /app/backend
+                   ignore: 
+                   - backend/data/
+#
+#
+#                   BACKEND API
+#
+    rag-api:
+            container_name: rag-api
+            build: 
+                  context: .
+                  dockerfile: backend/Dockerfile
+            depends_on: 
+                - vector_db
+            env_file: 
+                - .env
+            volumes: 
+                - .backend/data:/app/backend/data
+          #  deploy:
+             # resources:
+              #        reservations:
+               #         devices:
+               #               - capabilities: [gpu] 
+               #                 count: all
+            command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+            develop:
+                watch:
+                 - action: sync
+                   path: backend/
+                   target: /app/backend
+                   ignore:
+                   - backend/data/ 
+            restart: unless-stopped
+
+
+#
+#           OPEN WEBUI
+#
+    open-webui:
+            container_name: open-webui
+            image: ghcr.io/open-webui/open-webui:latest
+            ports:
+                - "3000:8080"
+            environment: 
+                - OPENAI_API_BASE_URL=http://rag-api:8000/v1       # gui request đến backend api của rag-api cong 8000
+                - OPENAI_API_KEY=sk-dummy-key #truyen 1 key gia lap
+                - WEBUI_AUTH= false # tat man hinh dang nhap
+                - RAG_EMBEDDING_ENGINE=""
+            volumes: 
+            - open-webui-data:/app/backend/data
+volumes:
+  open-webui-data:
+                    
+

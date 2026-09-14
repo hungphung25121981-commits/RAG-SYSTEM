@@ -1,0 +1,34 @@
+# Python bytecode & cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+
+# Virtual Environments
+.venv/
+venv/
+env/
+ENV/
+
+# Data & Database Heavy Folders (Không copy vào Image!)
+backend/data/
+backend/data/qdrant_db/
+*.sqlite
+*.kuzu
+
+# Git & IDE configs
+.git/
+.gitignore
+.vscode/
+.idea/
+
+# Environment Variables & Sensitive Files
+.env
+*.pem
+*.key
+
+# Logs & Temp files
+*.log
+tmp/
+.DS_Store
