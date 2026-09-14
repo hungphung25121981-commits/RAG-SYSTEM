@@ -16,28 +16,28 @@ Phase 0 là "người gác cổng" của toàn hệ thống — chạy **trướ
 input_dir/*.mp4
       │
       ▼
-┌─────────────────────┐     conflict     ┌──────────────┐
-│ pip check            │ ────────────────▶│ HARD EXIT     │
-│ (Dependency Hard-Exit)│                  └──────────────┘
-└──────────┬───────────┘
+┌────────────────────────┐     conflict     ┌──────────────┐
+│ pip check              │ ────────────────▶ HARD EXIT    
+│ (Dependency Hard-Exit) │                  └──────────────┘
+└──────────┬─────────────┘
            │ ok
            ▼
-┌─────────────────────────────┐
+┌──────────────────────────────┐
 │ VID_Hash = MD5(              │
-│   Middle_1MB(file) +          │
-│   File_Size + Duration)       │
+│   Middle_1MB(file) +         │
+│   File_Size + Duration)      │
 └──────────┬───────────────────┘
            ▼
-┌─────────────────────────────┐      pending còn sót      ┌────────────────────────┐
-│ Kiểm tra Dual-State Tracker   │ ─────────────────────────▶│ Xóa vector "pending"    │
-│ (có phiên chạy dở không?)     │                            │ trong Qdrant + dọn      │
-└──────────┬───────────────────┘                            │ temp_workspace          │
+┌───────────────────────────────┐      pending còn sót       ┌────────────────────────┐
+│ Kiểm tra Dual-State Tracker   │ ─────────────────────────▶   Xóa vector "pending"   
+│ (có phiên chạy dở không?)     │                            │ trong Qdrant + dọn     │
+└──────────┬────────────────────┘                            │ temp_workspace         │
            │ sạch                                            └────────────────────────┘
            ▼
-┌─────────────────────────────┐
-│ (tùy chọn) Stress Test        │
-│ stress_test.mp4 (10s)         │
-│ → đo peak VRAM thực tế         │
+┌──────────────────────────────┐
+│ (tùy chọn) Stress Test       │
+│ stress_test.mp4 (10s)        │
+│ → đo peak VRAM thực tế       │
 └──────────┬───────────────────┘
            ▼
      Sẵn sàng cho Phase 1
