@@ -229,8 +229,8 @@ torch.cuda.empty_cache()
 --health_check                --dummy_test
 --wandb_key                  --id_pro
 --build_graph                 --kuzu_graph_path [path]
---qdrant_path [path] (truyền file vào Qdrant local ex: --run_phase 3 --db_path /kaggle/working/my_dataset/qdrant_db --query "...")
---meta_path [path] (truyền file vào metadata local ex: --run_phase 3 --meta_path /kaggle/working/my_dataset/metadata.json --query "...") (nếu có)
+--qdrant_path [path] (truyền file vào Qdrant local ex: --run_phase 3 --db_path my_dataset/qdrant_db --query "...")
+--meta_path [path] (truyền file vào metadata local ex: --run_phase 3 --meta_path my_dataset/metadata.json --query "...") (nếu có)
 ```
 
 **Tìm kiếm & Nhảy cóc (GraphRAG)**
@@ -309,4 +309,4 @@ domains:
 
 ---
 
-*Tài liệu này là bản tổng hợp cuối cùng sau các vòng phản biện kỹ thuật, sẵn sàng làm cơ sở để triển khai code theo từng Phase.*
+*Tài liệu này là bản tổng hợp cuối cùng sau các vòng phản biện kỹ thuật, sẵn sàng làm cơ sở để triển khai code theo từng Phase. Có thể sẽ cân nhắc thay RapidOCR thành DocTR model, chuyển siglip2 base sang siglip2 400m*
