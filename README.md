@@ -1,4 +1,4 @@
-# HUB KIẾN THỨC — MultiLayer VIDEO-RAG System
+# HUB KIẾN THỨC —VIDEO-RAG System
 
 > Hệ thống RAG (Retrieval-Augmented Generation) đa phương thức cho video, xử lý hoàn toàn cục bộ (local-first), domain-agnostic, tối ưu để chạy trên phần cứng phổ thông (16GB VRAM).
 
